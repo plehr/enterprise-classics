@@ -1,0 +1,20 @@
+{
+  "classics": [
+    {
+      "id": 25363,
+      "text": "Posted text",
+      "title": "Posted title"
+    },
+    {
+      "id": 66700,
+      "text": "Posted text",
+      "title": "Posted title"
+    },
+    {
+      "id": 88539,
+      "text": "Posted text",
+      "title": "Posted title"
+    }
+  ],
+  "user": {}
+}

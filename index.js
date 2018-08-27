@@ -1,43 +1,39 @@
 var express = require('express')
 var bodyParser = require('body-parser')
 var HttpStatus = require('http-status-codes')
+const low = require('lowdb')
+const FileSync = require('lowdb/adapters/FileSync')
+ 
+const adapter = new FileSync('db.json')
+const db = low(adapter)
 
 var app = express()
 
 app.use(bodyParser.json())
 
-var mockedClassics = [
-    {
-        "id": 981782,
-        "title": "Mocked Title #981782",
-        "text": "Mocked Text #981782"
-    },
-    {
-        "id": 3312,
-        "title": "Mocked Title #3312",
-        "text": "Mocked Text #3312"
-    },
-    {
-        "id": 1703,
-        "title": "Mocked Title #1703",
-        "text": "Mocked Text #1703"
+db.defaults({ classics: [] })
+  .write();
+
+db._.mixin({
+    random: function(array) {
+        return array[Math.floor(Math.random() * array.length)]
     }
-]
+})
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
 }
 
 app.get('/', function(req, res, next) {
-    const data = mockedClassics[Math.floor(Math.random() * mockedClassics.length)];
-    res.json(data);
+    const randomClassic = db.get('classics').random().value();
+    res.json(randomClassic);
 });
 app.post('/', function(req, res, next) {
     const newItem = Object.assign({id: getRandomInt(99999)}, req.body);
-    if(mockedClassics.push(newItem) > 0)
-        res.sendStatus(HttpStatus.CREATED);
-    else
-        res.sendStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+    db.get('classics')
+        .push(newItem)
+        .write();
+    res.sendStatus(HttpStatus.CREATED);
 });
 app.put('/:id', function(req, res, next) {
     res.send('Will PUT ' + req.params.id);
