@@ -1,45 +1,78 @@
-var express = require('express')
-var bodyParser = require('body-parser')
-var HttpStatus = require('http-status-codes')
+const express = require('express')
+const bodyParser = require('body-parser')
+const HttpStatus = require('http-status-codes')
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
+const Joi = require('joi');
  
 const adapter = new FileSync('db.json')
 const db = low(adapter)
 
-var app = express()
+const app = express()
 
 app.use(bodyParser.json())
-
-db.defaults({ classics: [] })
-  .write();
 
 db._.mixin({
     random: function(array) {
         return array[Math.floor(Math.random() * array.length)]
     }
-})
+});
 
-function getRandomInt(max) {
-    return Math.floor(Math.random() * Math.floor(max));
+const classicShape = Joi.object().keys({
+    title: Joi.string().max(140).required(),
+    text: Joi.string().max(1000).required()
+});
+
+const classicCollection = db
+    .defaults({ classics: [], classicAutoInc: 0})
+    .get('classics');
+
+function autoInc() {
+    const classicAutoIncFieldname = 'classicAutoInc';
+    const x = db.update(classicAutoIncFieldname, n => n + 1).write();
+    return x[classicAutoIncFieldname];
 }
 
 app.get('/', function(req, res, next) {
-    const randomClassic = db.get('classics').random().value();
+    const randomClassic = classicCollection.random().value();
     res.json(randomClassic);
 });
+app.get('/:id', function(req, res, next) {
+    const parsedIndex = parseInt(req.params.id);
+    if(!Number.isInteger(parsedIndex)) {
+        res.sendStatus(HttpStatus.BAD_REQUEST);
+        return;
+    }
+    const classic = classicCollection.find({ id: parsedIndex }).value();
+    if(classic)
+        res.json(classic);
+    else
+        res.sendStatus(HttpStatus.NOT_FOUND);
+});
 app.post('/', function(req, res, next) {
-    const newItem = Object.assign({id: getRandomInt(99999)}, req.body);
-    db.get('classics')
-        .push(newItem)
-        .write();
+    const validateResult = Joi.validate(req.body, classicShape);
+    if(validateResult.error) {
+        res.status(HttpStatus.BAD_REQUEST)
+           .send('Classic must have shape of {"title": <string>, "text": <string>}');
+        return;
+    }
+    const newClassic = Object.assign({id: autoInc()}, req.body);
+    classicCollection.push(newClassic).write();
     res.sendStatus(HttpStatus.CREATED);
 });
-app.put('/:id', function(req, res, next) {
-    res.send('Will PUT ' + req.params.id);
-});
 app.delete('/:id', function(req, res, next) {
-    res.send('Will DELETE ' + req.params.id);
+    const parsedIndex = parseInt(req.params.id);
+    if(!Number.isInteger(parsedIndex)) {
+        res.sendStatus(HttpStatus.BAD_REQUEST);
+        return;
+    }
+    const classic = classicCollection.find({ id: parsedIndex }).value();
+    if(classic) {
+        classicCollection.remove(classic).write();
+        res.sendStatus(HttpStatus.NO_CONTENT);
+    }
+    else
+        res.sendStatus(HttpStatus.NOT_FOUND);
 });
 
 app.listen(3000, function () {
