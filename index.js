@@ -35,7 +35,10 @@ function autoInc() {
 
 app.get('/', function(req, res, next) {
     const randomClassic = classicCollection.random().value();
-    res.json(randomClassic);
+    if(randomClassic)
+        res.json(randomClassic);
+    else
+        res.sendStatus(HttpStatus.NO_CONTENT);
 });
 app.get('/:id', function(req, res, next) {
     const parsedIndex = parseInt(req.params.id);
