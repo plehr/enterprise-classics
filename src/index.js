@@ -5,7 +5,7 @@ const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
 const Joi = require('joi');
  
-const adapter = new FileSync('db.json')
+const adapter = new FileSync('./data/enterprise-classics-db.json')
 const db = low(adapter)
 
 const app = express()
@@ -18,14 +18,15 @@ db._.mixin({
     }
 });
 
+db.defaults({ classics: [], classicAutoInc: 0})
+  .write();
+
+const classicCollection = db.get('classics');
+
 const classicShape = Joi.object().keys({
     title: Joi.string().max(140).required(),
     text: Joi.string().max(1000).required()
 });
-
-const classicCollection = db
-    .defaults({ classics: [], classicAutoInc: 0})
-    .get('classics');
 
 function autoInc() {
     const classicAutoIncFieldname = 'classicAutoInc';

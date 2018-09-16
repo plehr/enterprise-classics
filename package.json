@@ -4,7 +4,7 @@
   "description": "HTTP API to add and display classic enterprise decisions you won't go with.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node src/index.js"
   },
   "repository": {
     "type": "git",
