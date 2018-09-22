@@ -16,4 +16,4 @@ k
 
 *Database is empty by default. You must HTTP POST an entry.*
 
-curl http://[docker-host]:8080/ -H 'content-type: application/json' -d '{"title":"Title", "text":"Text"}'
+curl -X POST http://[docker-host]:8080/ -H 'content-type: application/json' -d '{"title":"Title", "text":"Text"}'
