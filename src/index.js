@@ -11,6 +11,7 @@ const db = low(adapter)
 const app = express()
 
 app.use(bodyParser.json())
+app.use('/ui', express.static('ui'))
 
 db._.mixin({
     random: function(array) {

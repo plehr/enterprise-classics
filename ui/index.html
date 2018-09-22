@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Enterprise Classics</title>
+</head>
+<body>
+
+<h1 id="title">... ...</h1>
+<p id="text">...</p>
+
+</body>
+<script>
+    var title = document.getElementById("title");
+    var text = document.getElementById("text");
+    function onError() {
+        title.innerText = "Ooups...";
+        text.innerText = ":'(";
+    }
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+        if(this.response) {
+            title.innerText = "#" + this.response.id + " " + this.response.title;
+            text.innerText = this.response.text;
+        } else {
+            onError();
+        }
+    }
+    xhr.onerror = onError;
+    xhr.open("GET", "../se");
+    xhr.responseType = "json";
+    xhr.send();
+</script>
+</html> 
